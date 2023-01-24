@@ -20,32 +20,18 @@ class ConverterTest extends TestCase
 
     public function getConvertData()
     {
-        yield 'text is escaped' => [
-            'foo <br>',
-            <<<'HTML'
-            foo &lt;br&gt;
-            HTML
+        yield 'text is escaped' => ['foo <br>', <<<'HTML'
+        foo &lt;br&gt;
+        HTML
         ];
 
-        yield 'newlines are preserved' => [
-            "foo\nbar",
-            "foo\nbar",
-        ];
+        yield 'newlines are preserved' => ["foo\nbar", "foo\nbar"];
 
-        yield 'backspaces 1' => [
-            "foobar\x08\x08\x08   ",
-            'foo   ',
-        ];
+        yield 'backspaces 1' => ["foobar\x08\x08\x08   ", 'foo   '];
 
-        yield 'backspaces 2' => [
-            "foob\e[31;41ma\e[0mr\x08\x08\x08   ",
-            'foo   ',
-        ];
+        yield 'backspaces 2' => ["foob\e[31;41ma\e[0mr\x08\x08\x08   ", 'foo   '];
 
-        yield 'backspaces 3' => [
-            "hi\x08\x08m",
-            'mi',
-        ];
+        yield 'backspaces 3' => ["hi\x08\x08m", 'mi'];
 
         yield 'basic color' => [
             "\e[31;41mfoo\e[0m",
@@ -68,10 +54,7 @@ class ConverterTest extends TestCase
             HTML
         ];
 
-        yield 'carriage returns' => [
-            "foo\rbar\rbarfoo",
-            'barfoo',
-        ];
+        yield 'carriage returns' => ["foo\rbar\rbarfoo", 'barfoo'];
 
         yield 'underline' => [
             "\e[4mfoo\e[0m",
@@ -103,10 +86,7 @@ class ConverterTest extends TestCase
             HTML
         ];
 
-        yield 'cursor movement' => [
-            "\e[1mHi mom!\x0D\e[m\x1B[2KActual output",
-            'Actual output',
-        ];
+        yield 'cursor movement' => ["\e[1mHi mom!\x0D\e[m\x1B[2KActual output", 'Actual output'];
 
         yield 'erase line' => [
             "12345\x08\x08\e[0K\n12345\x08\x08\e[1K\n12345\x08\x08\e[2K\n12345\x08\x08\e[K",

@@ -2,6 +2,15 @@
 
 namespace GoReply\AnsiToHtml;
 
+use function array_map;
+use function array_shift;
+use function explode;
+use function htmlspecialchars;
+use function max;
+use function preg_match_all;
+use function sprintf;
+use const PREG_SET_ORDER;
+
 class Converter
 {
     /** @var string[] */
@@ -9,14 +18,19 @@ class Converter
 
     /** @var NodeStyle */
     private $activeStyle;
+
     /** @var Node[][] */
     private $nodes = [];
+
     /** @var int */
     private $line = 0;
+
     /** @var int */
     private $column = 0;
+
     /** @var int */
     private $storedLine = 0;
+
     /** @var int */
     private $storedColumn = 0;
 
@@ -50,9 +64,9 @@ class Converter
 
     private function tokenize(string $text): iterable
     {
-        $text = \htmlspecialchars($text);
+        $text = htmlspecialchars($text);
 
-        \preg_match_all(
+        preg_match_all(
             <<<'REGEXP'
             /
               \e \[ (?<csi_params> [\d;]* ) (?<csi_type> [ABCDEFGHJKSTfmsu] )
@@ -62,7 +76,7 @@ class Converter
             REGEXP,
             $text,
             $matches,
-            \PREG_SET_ORDER
+            PREG_SET_ORDER
         );
 
         foreach ($matches as $match) {
@@ -71,7 +85,7 @@ class Converter
             } elseif (isset($match['osc'])) {
                 yield ['osc', [$match['osc'], $match['osc_params']]];
             } else {
-                $params = \array_map('intval', \explode(';', $match['csi_params']));
+                $params = array_map('intval', explode(';', $match['csi_params']));
                 yield ['control', [$match['csi_type'], $params]];
             }
         }
@@ -140,7 +154,7 @@ class Converter
                 $this->setSgrParameters($params);
                 break;
             case 'A':
-                $this->line = \max(0, $this->line - ($params[0] ?? 1));
+                $this->line = max(0, $this->line - ($params[0] ?? 1));
                 break;
             case 'B':
                 $this->line += $params[0] ?? 1;
@@ -149,14 +163,14 @@ class Converter
                 $this->column += $params[0] ?? 1;
                 break;
             case 'D':
-                $this->column = \max(0, $this->column - ($params[0] ?? 1));
+                $this->column = max(0, $this->column - ($params[0] ?? 1));
                 break;
             case 'E':
                 $this->line += $params[0] ?? 1;
                 $this->column = 0;
                 break;
             case 'F':
-                $this->line = \max(0, $this->line - ($params[0] ?? 1));
+                $this->line = max(0, $this->line - ($params[0] ?? 1));
                 $this->column = 0;
                 break;
             case 'G':
@@ -164,8 +178,8 @@ class Converter
                 break;
             case 'H':
             case 'f':
-                $this->line = \max(0, ($params[0] ?? 1) - 1);
-                $this->column = \max(0, ($params[1] ?? 1) - 1);
+                $this->line = max(0, ($params[0] ?? 1) - 1);
+                $this->column = max(0, ($params[1] ?? 1) - 1);
                 break;
             case 'K':
                 switch ($params[0] ?? 0) {
@@ -202,7 +216,7 @@ class Converter
     {
         switch ($type) {
             case '8':
-                [$params, $href] = \explode(';', $params, 2);
+                [$params, $href] = explode(';', $params, 2);
                 $this->pushAttr('href', $href);
                 break;
         }
@@ -213,7 +227,7 @@ class Converter
      */
     private function setSgrParameters(array $codes)
     {
-        while (null !== $code = \array_shift($codes)) {
+        while (null !== $code = array_shift($codes)) {
             switch ($code) {
                 case 0:
                     $this->activeStyle = NodeStyle::empty();
@@ -249,8 +263,8 @@ class Converter
                     $this->pushStyle('color', self::$colors[$code - 30] ?? '');
                     break;
                 case 38:
-                    if (\array_shift($codes) === 5) {
-                        $code = \array_shift($codes);
+                    if (array_shift($codes) === 5) {
+                        $code = array_shift($codes);
                         $this->pushStyle('color', self::$colors[$code] ?? '');
                     }
                     break;
@@ -265,8 +279,8 @@ class Converter
                     $this->pushStyle('background-color', self::$colors[$code - 40] ?? '');
                     break;
                 case 48:
-                    if (\array_shift($codes) === 5) {
-                        $code = \array_shift($codes);
+                    if (array_shift($codes) === 5) {
+                        $code = array_shift($codes);
                         $this->pushStyle('background-color', self::$colors[$code] ?? '');
                     }
                     break;
@@ -355,7 +369,7 @@ class Converter
 
     private static function formatColor(int $red, int $green, int $blue): string
     {
-        $hex = \sprintf('%02x%02x%02x', $red, $green, $blue);
+        $hex = sprintf('%02x%02x%02x', $red, $green, $blue);
         if ($hex[0] === $hex[1] && $hex[2] === $hex[3] && $hex[4] === $hex[5]) {
             return '#' . $hex[0] . $hex[2] . $hex[4];
         }

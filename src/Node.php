@@ -9,6 +9,7 @@ final class Node
 {
     /** @var string */
     private $text = '';
+
     /** @var NodeStyle */
     private $style;
 

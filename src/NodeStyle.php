@@ -2,6 +2,9 @@
 
 namespace GoReply\AnsiToHtml;
 
+use function htmlspecialchars;
+use function implode;
+
 /**
  * @internal
  */
@@ -9,6 +12,7 @@ final class NodeStyle
 {
     /** @var string[][] */
     private $styles;
+
     /** @var array */
     private $attrs;
 
@@ -50,7 +54,9 @@ final class NodeStyle
         if ($property === 'text-decoration') {
             $styles[$property][$value] = $value;
         } else {
-            $styles[$property] = [$value => $value];
+            $styles[$property] = [
+                $value => $value,
+            ];
         }
 
         return new self($this->attrs, $styles);
@@ -67,18 +73,18 @@ final class NodeStyle
 
         $style = [];
         foreach ($this->styles as $attr => $values) {
-            $value = \implode(' ', $values);
+            $value = implode(' ', $values);
             $style[] = $attr . ':' . $value;
         }
 
         $attrs = $this->attrs;
-        $attrs['style'] = \implode(';', $style) ?: null;
+        $attrs['style'] = implode(';', $style) ?: null;
 
         $result = '<' . $tag;
 
         foreach ($attrs as $attr => $value) {
             if ($value !== null) {
-                $result .= ' ' . $attr . '="' . \htmlspecialchars($value) . '"';
+                $result .= ' ' . $attr . '="' . htmlspecialchars($value) . '"';
             }
         }
 
